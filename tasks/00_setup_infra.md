@@ -8,9 +8,9 @@ Esta tarefa estabelece a fundação do projeto. Os scripts subsequentes depender
 * **Ler instrução:** `instructions/08_ENVIRONMENT_SETUP.md`
 
 ## 2. Princípios de Engenharia
-* **Single Source of Truth:** Caminhos de diretório nunca devem ser strings soltas ("magic strings"). Tudo deve vir de um arquivo de configuração central.
-* **OS Agnostic:** Use `pathlib` para garantir compatibilidade de caminhos (embora o alvo seja Mac, é boa prática).
-* **Feedback Visual:** O terminal é a UI do desenvolvedor. Logs devem ser coloridos e semânticos.
+* **Single Source of Truth:** Caminhos de diretório nunca devem ser strings soltas. Tudo deve vir de um arquivo de configuração central.
+* **OS Agnostic:** Use `pathlib`.
+* **Clean Repository:** Dados pesados (vídeo/áudio) nunca devem ser commitados no Git.
 
 ## 3. Instruções de Implementação
 Peça para o Copilot gerar os seguintes arquivos:
@@ -29,21 +29,24 @@ Peça para o Copilot gerar os seguintes arquivos:
 
 ### B. Configuração Central (`src/config.py`)
 * Defina `PROJECT_ROOT` dinamicamente usando `Path(__file__)`.
-* Mapeie todas as pastas de dados listadas acima como constantes (ex: `INPUT_DIR`, `AUDIO_DIR`).
-* Defina constantes de Modelo:
-    * Whisper: `mlx-community/whisper-large-v3-mlx`
-    * Ollama: `llama3.1:8b`
-* Defina constantes de Áudio: `SAMPLE_RATE = 16000`, `CHANNELS = 1`.
+* Mapeie todas as pastas de dados listadas acima como constantes.
+* Defina constantes de Modelo (Whisper Large-v3, Llama 3.1) e Áudio (16kHz).
 
 ### C. Logger Utilitário (`src/utils/logger.py`)
-* Configure o `logging` do Python para usar a biblioteca `colorlog`.
-* Defina um formato que inclua: Hora, Nível (Colorido), Módulo e Mensagem.
-* Níveis: DEBUG (Cyan), INFO (Green), WARNING (Yellow), ERROR (Red).
+* Configure `logging` com `colorlog` (Info=Verde, Error=Vermelho).
 
 ### D. Dependências (`requirements.txt`)
-* Liste as bibliotecas essenciais baseadas nas specs (pydantic, ffmpeg-python, mlx-whisper, ollama, librosa, colorlog).
+* Liste: pydantic, ffmpeg-python, mlx-whisper, ollama, librosa, colorlog, soundfile, numpy.
+
+### E. Controle de Versão (`.gitignore`)
+* Crie um `.gitignore` robusto na raiz que ignore explicitamente:
+    * `data/*` (Mas mantenha os `.gitkeep`: `!data/**/.gitkeep`).
+    * `video_engine/node_modules`.
+    * `video_engine/dist` ou `video_engine/out`.
+    * `__pycache__`, `*.pyc`.
+    * `.env` e pastas de venv (`.venv`, `env`).
 
 ## 4. Definition of Done (DoD)
-- [ ] Ao rodar `python setup_project.py`, todas as pastas são criadas.
-- [ ] Importar `src.config` em um shell python funciona e imprime os caminhos corretos.
-- [ ] O logger imprime mensagens coloridas no terminal.
+- [ ] Rodar `python setup_project.py` cria todas as pastas.
+- [ ] O arquivo `.gitignore` existe e impede o commit de arquivos na pasta `data`.
+- [ ] Importar `src.config` funciona corretamente.

@@ -36,8 +36,9 @@ O script deve operar estritamente nestes caminhos:
 * **Context Window:** O script deve verificar o tamanho do texto. Se exceder o contexto (ex: 8k tokens), deve-se usar uma estratégia de *chunking* ou garantir que o modelo suporte janelas maiores (Llama 3.1 suporta até 128k, então geralmente é seguro passar o texto inteiro).
 
 ### 3.2 System Prompt (A "Persona")
-O prompt do sistema deve ser rigoroso quanto ao formato JSON. Exemplo de diretriz:
-*"Você é um Especialista em Design Instrucional. Sua tarefa é converter transcrições brutas em roteiros de vídeo-aula altamente estruturados. Você deve limpar a fala, remover redundâncias e dividir o conteúdo em segmentos visuais claros (Intro, Conceito, Código, Resumo). Responda APENAS com o JSON válido."*
+O prompt do sistema deve ser rigoroso quanto ao formato JSON e ao idioma. Exemplo de diretriz:
+
+> "Você é um Especialista em Design Instrucional. Sua tarefa é converter transcrições brutas em roteiros de vídeo-aula altamente estruturados. Você deve limpar a fala, remover redundâncias e dividir o conteúdo em segmentos visuais claros (Intro, Conceito, Código, Resumo). **Responda estritamente em Português do Brasil**, mantendo apenas os termos técnicos/código em inglês. Responda APENAS com o JSON válido."
 
 ---
 
@@ -105,11 +106,11 @@ O LLM deve gerar (e o Python deve validar) a seguinte estrutura. Recomenda-se us
 1.  [ ] O script `step_03_refine.py` lê o JSON bruto da Fase 2.
 2.  [ ] O Ollama processa o texto e retorna uma estrutura.
 3.  [ ] O JSON de saída passa na validação do Schema (campos obrigatórios presentes).
-4.  [ ] O campo `voiceover_text` está limpo (sem "hmmm", "ééé", "tipo assim").
+4.  [ ] O campo `voiceover_text` está limpo (sem "hmmm", "ééé", "tipo assim") e em **Português**.
 5.  [ ] Arquivos gerados são salvos em `data/03_structured_scripts/`.
 
 ---
 
 ## 7. Prompt para Implementação (Copiar para IA)
 
-> "Atue como um Engenheiro de Backend Python. Implemente o módulo `src/pipeline/step_03_refine.py`. Use a biblioteca `ollama` para processar transcrições. Defina modelos `Pydantic` para validar a estrutura do JSON de saída (Meta e Segmentos). Implemente uma lógica robusta que tenta extrair JSON válido da resposta do LLM e, em caso de falha, realiza até 2 tentativas de retry. O prompt deve instruir o modelo a limpar o texto para um formato didático."
+> "Atue como um Engenheiro de Backend Python. Implemente o módulo `src/pipeline/step_03_refine.py`. Use a biblioteca `ollama` para processar transcrições. Defina modelos `Pydantic` para validar a estrutura do JSON de saída (Meta e Segmentos). Implemente uma lógica robusta que tenta extrair JSON válido da resposta do LLM e, em caso de falha, realiza até 2 tentativas de retry. O prompt deve instruir o modelo a limpar o texto para um formato didático em Português do Brasil."

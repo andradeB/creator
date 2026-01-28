@@ -85,6 +85,7 @@ O JSON de saída deve ser idêntico ao da Fase 3, mas com dois campos novos em c
 3.  Loop `for segment in script['segments']`:
     * Verificar se `voiceover_text` existe.
     * Gerar áudio `.wav`.
+    * **Padding de Áudio:** Adicionar 0.5s de silêncio (zeros) ao final do array numpy antes de salvar. Isso evita cortes abruptos no vídeo.
     * Salvar como `seg_{id}.wav`.
     * Ler arquivo com `librosa` ou `wave` para pegar `seconds`.
     * Calcular `frames = seconds * 30`.
@@ -99,7 +100,7 @@ O JSON de saída deve ser idêntico ao da Fase 3, mas com dois campos novos em c
 ## 6. Critérios de Aceite (Definition of Done)
 
 1.  [ ] O script cria uma subpasta para o projeto em `data/04_assets_generated/`.
-2.  [ ] Arquivos `.wav` individuais são criados e são audíveis.
+2.  [ ] Arquivos `.wav` individuais são criados, são audíveis e possuem um pequeno silêncio ao final.
 3.  [ ] A voz gerada lembra o timbre do orador original (mesmo que não seja idêntica, deve ser consistente).
 4.  [ ] O arquivo `enriched_script.json` é gerado e contém o campo `durationInFrames` (inteiro) em todos os segmentos.
 5.  [ ] A soma das durações dos áudios corresponde aproximadamente ao tempo total estimado da aula.
@@ -108,4 +109,4 @@ O JSON de saída deve ser idêntico ao da Fase 3, mas com dois campos novos em c
 
 ## 7. Prompt para Implementação (Copiar para IA)
 
-> "Atue como um Engenheiro de Audio e Python. Implemente o módulo `src/pipeline/step_04_synthesize.py`. Use uma API wrapper para o GPT-SoVITS (ou mock para teste inicial). O script deve ler o roteiro da Fase 3, gerar áudios para cada fala, salvar em uma pasta organizada e, crucialmente, medir a duração de cada arquivo wav para calcular o `durationInFrames` (base 30fps). Salve o resultado como `enriched_script.json`. Implemente cache para evitar re-sintetizar áudios já existentes."
+> "Atue como um Engenheiro de Audio e Python. Implemente o módulo `src/pipeline/step_04_synthesize.py`. Use uma API wrapper para o GPT-SoVITS (ou mock para teste inicial). O script deve ler o roteiro da Fase 3, gerar áudios para cada fala, adicionar 0.5s de silêncio ao final (padding) e salvar em uma pasta organizada. Crucialmente, meça a duração final de cada arquivo wav para calcular o `durationInFrames` (base 30fps). Salve o resultado como `enriched_script.json`. Implemente cache para evitar re-sintetizar áudios já existentes."

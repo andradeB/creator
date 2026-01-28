@@ -8,35 +8,33 @@ Transformar texto falado (bagunçado) em texto visual (estruturado). Aqui usamos
 * **Ler instrução:** `instructions/04_SPEC_PHASE_03.md`
 
 ## 2. Princípios de Engenharia
-* **Strict Typing:** Não confie na saída do LLM. Use `Pydantic` para garantir que o JSON tem exatamente os campos necessários. Se não tiver, é considerado erro.
-* **Self-Healing (Retry):** LLMs falham. O código deve ter um loop que tenta corrigir erros de parse automaticamente (ex: reenviar o erro para o LLM pedindo correção).
-* **Prompt Engineering:** O prompt do sistema deve ser explícito sobre o formato de saída ("Responda APENAS JSON").
+* **Strict Typing:** Use `Pydantic` para garantir o contrato de dados.
+* **Defensive Parsing:** Nunca confie que a string do LLM virá limpa. Ela virá suja. Prepare o código para limpá-la.
+* **Self-Healing:** Se falhar, tente corrigir automaticamente.
 
 ## 3. Instruções de Implementação
-Peça para o Copilot gerar o arquivo `src/pipeline/step_03_refine.py` com a classe `ScriptArchitect`:
+Peça para o Copilot gerar o arquivo `src/pipeline/step_03_refine.py`:
 
 ### A. Definição do Schema (Pydantic)
-* Defina modelos para:
-    * `VisualContent`: (headline, code_snippet, etc.)
-    * `Segment`: (id, type [title_screen, code, concept], voiceover_text, visual_content)
-    * `Script`: (meta, segments)
+* Defina modelos para `VisualContent`, `Segment` e `Script` conforme a spec.
 
-### B. Integração com Ollama
-* Use a lib `ollama`.
-* Crie um método que lê o texto completo da transcrição da Fase 2.
+### B. Utilitário de Limpeza (JSON Sanitizer)
+* Crie uma função privada `_clean_json_response(text: str) -> str`.
+* Ela deve usar Regex para remover delimitadores de código Markdown (ex: ```json ... ```).
+* Ela deve buscar o primeiro `{` e o último `}` da string para ignorar textos introdutórios do chat.
 
-### C. Lógica de Refinamento
-* Envie o texto para o `llama3.1` com um System Prompt focado em Design Instrucional.
-* Instrua o modelo a limpar o texto falado (remover "hmmm", "tá", "né").
-* O modelo deve dividir o conteúdo em slides visuais.
+### C. Integração e Lógica
+* Conecte ao Ollama (`llama3.1:8b`).
+* System Prompt: "Atue como Designer Instrucional. Responda APENAS JSON. Responda em Português do Brasil".
+* Fluxo:
+    1. Enviar prompt.
+    2. Receber texto sujo.
+    3. Passar pelo `_clean_json_response`.
+    4. Tentar `Script.model_validate_json()`.
 
-### D. Validação e Loop de Retry
-* Receba a string do LLM.
-* Tente: `Script.model_validate_json(response)`.
-* `Except ValidationError`: Capture o erro, incremente um contador de tentativas, e chame o LLM novamente: "Seu JSON estava inválido aqui: {erro}. Corrija."
-* Limite a 3 tentativas. Se falhar, levante erro crítico.
+### D. Loop de Retry
+* Se a validação falhar, capture o erro e reenvie ao LLM: "Erro no JSON: {e}. Corrija mantendo o mesmo conteúdo." (Máx 3 tentativas).
 
 ## 4. Definition of Done (DoD)
-- [ ] O script gera um arquivo JSON limpo em `data/03`.
-- [ ] O JSON passa na validação do Pydantic.
-- [ ] O texto `voiceover_text` está fluido e sem vícios de linguagem.
+- [ ] O script consegue ler uma resposta do Ollama contendo "Aqui está seu JSON: ```json {...}```" e extrair apenas o objeto válido sem quebrar.
+- [ ] O JSON final é salvo e validado pelo Pydantic.
